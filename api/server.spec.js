@@ -3,6 +3,8 @@ const request = require("supertest")
 const server = require("./server")
 const db = require("../database/dbConfig")
 
+let token = ""
+
 describe("auth-router", () => {
   describe("post register", () => {
     beforeEach(async () => {
@@ -42,10 +44,27 @@ describe("auth-router", () => {
         .post("/api/auth/login")
         .send({ username: "yellow", password: "yellow" })
         .then((res) => {
-          expect(res.body.message).toBe("welcome back")
+            expect(res.body.message).toBe("welcome back")
+            token = res.body.token
         })
     })
   })
     
-
+    describe("get jokes", () => {
+        it("should not be able to get jokes without token", () => {
+            return request(server)
+                .get("/api/jokes")
+                .then(res => {
+                expect(res.status).toBe(401)
+            })
+      })
+        it("should be able to get jokes without token", () => {
+            return request(server)
+                .get("/api/jokes")
+                .set({"Authorization": token})
+                .then(res => {
+                expect(res.status).toBe(200)
+            })
+      })
+  })
 })
